@@ -1,3 +1,15 @@
+class AuthorizationError extends Error {
+  constructor (message, extra) {
+    super(...arguments)
+    Error.captureStackTrace(this, this.constructor)
+    this.name = 'AuthorizationError'
+    this.message = message
+    if (extra) {
+      this.extra = extra
+    }
+  }
+}
+
 class ValidationError extends Error {
   constructor (message, extra) {
     super(...arguments)
@@ -47,6 +59,7 @@ const isNotBlank = {
 }
 
 module.exports = {
+  AuthorizationError,
   isBool,
   isInteger,
   isNotBlank,

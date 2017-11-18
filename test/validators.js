@@ -1,6 +1,7 @@
 /* eslint-env mocha */
 const assert = require('assert')
 const {
+  AuthorizationError,
   isBool,
   isInteger,
   isNotBlank,
@@ -10,54 +11,59 @@ const {
 } = require('../src/validators')
 
 describe('Validators', function () {
-  describe('ValidationError', function () {
-    function doSomethingBad () {
-      throw new ValidationError('It went bad!', 42)
-    }
-
-    let err
-    beforeEach(function () {
-      try {
-        doSomethingBad()
-      } catch (e) {
-        err = e
+  [
+    AuthorizationError,
+    ValidationError
+  ].forEach(function (ErrClass) {
+    describe(ErrClass.name, function () {
+      function doSomethingBad () {
+        throw new ErrClass('It went bad!', 42)
       }
-    })
 
-    it('The name property should be set to the error\'s name', function () {
-      assert(err.name = 'ValidationError')
-    })
+      let err
+      beforeEach(function () {
+        try {
+          doSomethingBad()
+        } catch (e) {
+          err = e
+        }
+      })
 
-    it('The error should be an instance of its class', function () {
-      assert(err instanceof ValidationError)
-    })
+      it('The name property should be set to the error\'s name', function () {
+        assert(err.name = ErrClass.name)
+      })
 
-    it('The error should be an instance of builtin Error', function () {
-      assert(err instanceof Error)
-    })
+      it('The error should be an instance of its class', function () {
+        assert(err instanceof ErrClass)
+      })
 
-    it('The error should be recognized by Node.js\' util#isError', function () {
-      assert(require('util').isError(err))  // eslint-disable-line node/no-deprecated-api
-    })
+      it('The error should be an instance of builtin Error', function () {
+        assert(err instanceof Error)
+      })
 
-    it('The error should have recorded a stack', function () {
-      assert(err.stack)
-    })
+      it('The error should be recognized by Node.js\' util#isError', function () {
+        assert(require('util').isError(err))  // eslint-disable-line node/no-deprecated-api
+      })
 
-    it('toString should return the default error message formatting', function () {
-      assert.strictEqual(err.toString(), 'ValidationError: It went bad!')
-    })
+      it('The error should have recorded a stack', function () {
+        assert(err.stack)
+      })
 
-    it('The stack should start with the default error message formatting', function () {
-      assert.strictEqual(err.stack.split('\n')[0], 'ValidationError: It went bad!')
-    })
+      it('toString should return the default error message formatting', function () {
+        assert.strictEqual(err.toString(), `${ErrClass.name}: It went bad!`)
+      })
 
-    it('The first stack frame should be the function where the error was thrown.', function () {
-      assert.strictEqual(err.stack.split('\n')[1].indexOf('doSomethingBad'), 7)
-    })
+      it('The stack should start with the default error message formatting', function () {
+        assert.strictEqual(err.stack.split('\n')[0], `${ErrClass.name}: It went bad!`)
+      })
 
-    it('The extra property should have been set', function () {
-      assert.strictEqual(err.extra, 42)
+      it('The first stack frame should be the function where the error was thrown.', function () {
+        assert.strictEqual(err.stack.split('\n')[1].indexOf('doSomethingBad'), 7)
+      })
+
+      it('The extra property should have been set', function () {
+        assert.strictEqual(err.extra, 42)
+      })
     })
   })
 
@@ -213,7 +219,7 @@ describe('Validators', function () {
     })
 
     describe('message', function () {
-      it('says the field must be a boolean', function () {
+      it('says the field must be an integer', function () {
         assert.equal(isInteger.message('"Float On"'), '"Float On" must be an integer')
       })
     })
