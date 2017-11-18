@@ -4,13 +4,18 @@
   "description": "The API For Tyler And Sarah's Wedding Website",
   "main": "index.js",
   "scripts": {
-    "test": "mocha --recursive",
     "lint": "standard",
-    "migrate": "heroku run PGSSLMODE=require node-pg-migrate up",
-    "start": "heroku local web"
+    "migrate": "node-pg-migrate up",
+    "migrate:production": "heroku run PGSSLMODE=require node-pg-migrate up",
+    "psql": "docker exec -it wedsite_db psql -U wedsiteapi -W -d wedsite",
+    "start:api": "heroku local web",
+    "start:db": "docker run -it -d --rm --name wedsite_db -p 5432:5432 -e POSTGRES_USER=wedsiteapi -e POSTGRES_PASSWORD=password -e POSTGRES_DB=wedsite postgres",
+    "stop:db": "docker stop wedsite_db",
+    "test": "mocha --recursive"
   },
   "author": "Tyler Benjamin",
   "dependencies": {
+    "body-parser": "1.18.2",
     "express": "4.16.2",
     "node-pg-migrate": "2.14.0",
     "pg": "7.4.0"
