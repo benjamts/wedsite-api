@@ -1,7 +1,7 @@
 exports.up = (pgm) => {
   pgm.createTable('rsvp', {
     id: 'id',
-    additionalNotes: {
+    additional_notes: {
       type: 'string'
     },
     created_at: {
