@@ -1,0 +1,22 @@
+{
+  "name": "wedsite-api",
+  "version": "1.0.0",
+  "description": "The API For Tyler And Sarah's Wedding Website",
+  "main": "index.js",
+  "scripts": {
+    "test": "mocha --recursive",
+    "lint": "standard",
+    "start": "node index.js --use_strict"
+  },
+  "author": "Tyler Benjamin",
+  "dependencies": {
+    "express": "4.16.2",
+    "pg": "7.4.0"
+  },
+  "devDependencies": {
+    "mocha": "4.0.1",
+    "sinon": "4.1.2",
+    "standard": "10.0.3",
+    "supertest": "3.0.0"
+  }
+}
