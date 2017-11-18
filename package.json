@@ -3,10 +3,10 @@
   "version": "1.0.0",
   "description": "The API For Tyler And Sarah's Wedding Website",
   "main": "index.js",
-  "heroku-postbuild": "heroku run PGSSLMODE=require node-pg-migrate up",
   "scripts": {
     "test": "mocha --recursive",
     "lint": "standard",
+    "migrate": "heroku run PGSSLMODE=require node-pg-migrate up",
     "start": "heroku local web"
   },
   "author": "Tyler Benjamin",
