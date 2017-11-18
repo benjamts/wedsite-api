@@ -1,0 +1,15 @@
+{
+    "additionalNotes": "Looking forward to it!",
+    "numberOfAttendees": 2,
+    "inviteCode": "foo",
+    "attendees": [
+        {
+            "name": "Foo McBarson",
+            "isAttending": true
+        },
+        {
+            "name": "Baz McBarson",
+            "isAttending": true
+        }
+    ]
+}

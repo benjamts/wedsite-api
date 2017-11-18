@@ -1,0 +1,5 @@
+curl \
+    -H "Content-Type: application/json" \
+    -X POST \
+    -d @body.json \
+    http://localhost:3000/rsvp

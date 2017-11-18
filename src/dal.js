@@ -3,7 +3,6 @@ const sql = require('./sql-template-tag')
 const {
   validate,
   isString,
-  isInteger,
   isNotBlank,
   isBool
 } = require('./validators')
@@ -12,42 +11,42 @@ function _health () {
   return db.query(`SELECT 1;`)
 }
 
-function insertAttendee (attendee) {
+function insertRsvp (rsvp) {
   return Promise.resolve().then(function () {
-    const { rsvpId, name, isAttending } = attendee
-
-    validate('rsvpId', rsvpId)(isInteger)
-    validate('name', name)(isString, isNotBlank)
-    validate('isAttending', isAttending)(isBool)
-
-    return db.query(sql`
-      INSERT INTO attendee
-      (rsvp_id, name, is_attending)
-      VALUES
-      ($1, $2, $3);
-    `, [
-      rsvpId,
-      name,
-      isAttending
-    ])
-    .then(function (result) {
-      return result.rows[0]
-    })
-  })
-}
-
-function insertRSVP (rsvp) {
-  return Promise.resolve().then(function () {
-    const { additionalNotes } = rsvp
+    const { additionalNotes, attendees } = rsvp
 
     validate('additionalNotes', additionalNotes)(isString)
 
-    return db.query(sql`
-      INSERT INTO rsvp
-      (additional_notes)
+    attendees.forEach(function (attendee) {
+      const { name, isAttending } = attendee
+
+      validate('name', name)(isString, isNotBlank)
+      validate('isAttending', isAttending)(isBool)
+    })
+
+    const values = [additionalNotes]
+    const querystring = sql`
+      WITH new_rsvp AS (
+        INSERT INTO rsvp
+        (additional_notes)
+        VALUES
+        ($1)
+        RETURNING id
+      )
+      INSERT INTO attendee
+      (rsvp_id, full_name, is_attending)
       VALUES
-      ($1);
-    `, [additionalNotes])
+        ${attendees.map(attendee => `
+          (
+            (SELECT id FROM new_rsvp),
+            $${values.push(attendee.name)},
+            $${values.push(attendee.isAttending)}
+          )
+        `).join(',')}
+      RETURNING (SELECT id FROM new_rsvp);
+    `
+
+    return db.query(querystring, values)
     .then(function (result) {
       return result.rows[0]
     })
@@ -56,6 +55,5 @@ function insertRSVP (rsvp) {
 
 module.exports = {
   _health,
-  insertAttendee,
-  insertRSVP
+  insertRsvp
 }
