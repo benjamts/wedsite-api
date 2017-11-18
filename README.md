@@ -32,6 +32,7 @@ npm start:api
 ```
 
 If your app is running, you should get 200 from `localhost:3000/_health`
+
 If your app and database are both running, you should get 200 from `localhost:3000/_db_health`
 
 ## Running Queries Directly

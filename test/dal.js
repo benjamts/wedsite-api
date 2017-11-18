@@ -19,119 +19,25 @@ describe('dal', function () {
     db.query.restore()
   })
 
-  describe('insertAttendee', function () {
-    let attendee
-    let newAttendee
-    beforeEach(function () {
-      attendee = {
-        rsvpId: 1,
-        name: 'Foo McBarson',
-        isAttending: true
-      }
-
-      newAttendee = { id: 100 }
-      db.query.resolves({
-        command: 'INSERT',
-        fields: Object.keys(newAttendee),
-        rowCount: 1,
-        rows: [newAttendee]
-      })
-    })
-
-    function assertInsertFails (attendee) {
-      return dal.insertAttendee(attendee)
-      .then(() => assert.ok(false))
-      .catch(function (err) {
-        if (err instanceof ValidationError) {
-          assert(db.query.notCalled)
-        } else {
-          throw err
-        }
-      })
-    }
-
-    describe('runs an insert query', function () {
-      it('with the given attendee\'s attributes', function () {
-        return dal.insertAttendee(attendee)
-        .then(function () {
-          const [querystring, values] = db.query.args[0]
-          assert(db.query.calledOnce)
-          assert.equal(querystring, sql`
-            INSERT INTO attendee
-            (rsvp_id, name, is_attending)
-            VALUES
-            ($1, $2, $3);
-          `)
-          assert.deepEqual(values, [
-            attendee.rsvpId,
-            attendee.name,
-            attendee.isAttending
-          ])
-        })
-      })
-
-      it('resolving to the newly created attendee info', function () {
-        return dal.insertAttendee(attendee)
-        .then(res => assert.equal(res, newAttendee))
-      })
-    })
-
-    describe('rsvpId', function () {
-      it('can be an integer', function () {
-        return dal.insertAttendee(attendee)
-        .then(() => assert(db.query.calledOnce))
-      })
-
-      it('cannot be a non-integer', function () {
-        attendee.rsvpId = '1'
-        return assertInsertFails(attendee)
-      })
-    })
-
-    describe('name', function () {
-      it('can be a string', function () {
-        return dal.insertAttendee(attendee)
-        .then(() => assert(db.query.calledOnce))
-      })
-
-      it('cannot be a non-string', function () {
-        delete attendee.name
-        return assertInsertFails(attendee)
-      })
-
-      it('cannot be blank', function () {
-        attendee.name = '  '
-        return assertInsertFails(attendee)
-      })
-    })
-
-    describe('isAttending', function () {
-      it('can be true', function () {
-        attendee.isAttending = true
-        return dal.insertAttendee(attendee)
-        .then(() => assert(db.query.calledOnce))
-      })
-
-      it('can be false ...I guess :(', function () {
-        attendee.isAttending = false
-        return dal.insertAttendee(attendee)
-        .then(() => assert(db.query.calledOnce))
-      })
-
-      it('cannot be a non-Boolean', function () {
-        attendee.isAttending = 'true'
-        return assertInsertFails(attendee)
-      })
-    })
-  })
-
-  describe('insertRSVP', function () {
+  describe('insertRsvp', function () {
     let rsvp
     let newRsvp
     beforeEach(function () {
-      rsvp = { additionalNotes: 'foobar' }
+      rsvp = {
+        additionalNotes: 'foobar',
+        attendees: [
+          {
+            name: 'Foo McBarson',
+            isAttending: true
+          },
+          {
+            name: 'Baz McBarson',
+            isAttending: false
+          }
+        ]
+      }
 
-      newRsvp = { id: 100, additionalNotes: 'foobar' }
+      newRsvp = { id: 100 }
       db.query.resolves({
         command: 'INSERT',
         fields: Object.keys(newRsvp),
@@ -141,7 +47,7 @@ describe('dal', function () {
     })
 
     function assertInsertFails (rsvp) {
-      return dal.insertRSVP(rsvp)
+      return dal.insertRsvp(rsvp)
       .then(() => assert.ok(false))
       .catch(function (err) {
         if (err instanceof ValidationError) {
@@ -154,22 +60,37 @@ describe('dal', function () {
 
     describe('runs an insert query', function () {
       it('with the given rsvp\'s attributes', function () {
-        return dal.insertRSVP(rsvp)
+        return dal.insertRsvp(rsvp)
         .then(function () {
           const [querystring, values] = db.query.args[0]
           assert(db.query.calledOnce)
           assert.equal(querystring, sql`
-            INSERT INTO rsvp
-            (additional_notes)
+            WITH new_rsvp AS (
+              INSERT INTO rsvp
+              (additional_notes)
+              VALUES
+              ($1)
+              RETURNING id
+            )
+            INSERT INTO attendee
+            (rsvp_id, full_name, is_attending)
             VALUES
-            ($1);
+              ( (SELECT id FROM new_rsvp), $2, $3 ),
+              ( (SELECT id FROM new_rsvp), $4, $5 )
+            RETURNING (SELECT id FROM new_rsvp);
           `)
-          assert.deepEqual(values, [rsvp.additionalNotes])
+          assert.deepEqual(values, [
+            rsvp.additionalNotes,
+            rsvp.attendees[0].name,
+            rsvp.attendees[0].isAttending,
+            rsvp.attendees[1].name,
+            rsvp.attendees[1].isAttending
+          ])
         })
       })
 
       it('resolving to the newly created rsvp info', function () {
-        return dal.insertRSVP(rsvp)
+        return dal.insertRsvp(rsvp)
         .then(res => assert.equal(res, newRsvp))
       })
     })
@@ -177,19 +98,62 @@ describe('dal', function () {
     describe('additionalNotes', function () {
       it('can be a string', function () {
         rsvp.additionalNotes = 'foo'
-        return dal.insertRSVP(rsvp)
+        return dal.insertRsvp(rsvp)
         .then(() => assert(db.query.calledOnce))
       })
 
       it('can be blank', function () {
         rsvp.additionalNotes = ''
-        return dal.insertRSVP(rsvp)
+        return dal.insertRsvp(rsvp)
         .then(() => assert(db.query.calledOnce))
       })
 
       it('cannot be a non-string', function () {
         rsvp.additionalNotes = 1
         return assertInsertFails(rsvp)
+      })
+    })
+
+    describe('attendee', function () {
+      let attendee
+      beforeEach(function () {
+        attendee = rsvp.attendees[1]
+      })
+
+      describe('name', function () {
+        it('can be a string', function () {
+          return dal.insertRsvp(rsvp)
+          .then(() => assert(db.query.calledOnce))
+        })
+
+        it('cannot be a non-string', function () {
+          delete attendee.name
+          return assertInsertFails(rsvp)
+        })
+
+        it('cannot be blank', function () {
+          attendee.name = '  '
+          return assertInsertFails(rsvp)
+        })
+      })
+
+      describe('isAttending', function () {
+        it('can be true', function () {
+          attendee.isAttending = true
+          return dal.insertRsvp(rsvp)
+          .then(() => assert(db.query.calledOnce))
+        })
+
+        it('can be false ...I guess :(', function () {
+          attendee.isAttending = false
+          return dal.insertRsvp(rsvp)
+          .then(() => assert(db.query.calledOnce))
+        })
+
+        it('cannot be a non-Boolean', function () {
+          attendee.isAttending = 'true'
+          return assertInsertFails(rsvp)
+        })
       })
     })
   })
