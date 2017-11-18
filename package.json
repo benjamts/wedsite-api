@@ -6,7 +6,7 @@
   "scripts": {
     "test": "mocha --recursive",
     "lint": "standard",
-    "start": "node index.js --use_strict"
+    "start": "heroku local web"
   },
   "author": "Tyler Benjamin",
   "dependencies": {
