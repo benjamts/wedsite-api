@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "The API For Tyler And Sarah's Wedding Website",
   "main": "index.js",
+  "heroku-postinstall": "PGSSLMODE=require node_modules/.bin/node-pg-migrate up",
   "scripts": {
     "test": "mocha --recursive",
     "lint": "standard",
@@ -11,6 +12,7 @@
   "author": "Tyler Benjamin",
   "dependencies": {
     "express": "4.16.2",
+    "node-pg-migrate": "2.14.0",
     "pg": "7.4.0"
   },
   "devDependencies": {
