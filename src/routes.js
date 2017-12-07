@@ -23,7 +23,7 @@ router.post('/rsvp', function (req, res, next) {
     } = req.body
 
     if (inviteCode !== config.INVITE_CODE) {
-      throw new AuthorizationError('Sorry, I don\'t recognize your invite code. Please double-check that it matches the code on your invite (case matters). If you\'re still having trouble, you can email your RSVP to rsvp@tylerandsarah.com')
+      throw new AuthorizationError('Sorry, I don\'t recognize this code. Please double-check that it matches the one on your paper invitation (case matters).')
     } else if (
       numberOfAttendees < 1 ||
       numberOfAttendees !== attendees.length

@@ -120,7 +120,7 @@ describe('Route', function () {
       rsvp.inviteCode = 'notthepassword'
       return request(app).post('/rsvp').send(rsvp)
       .expect(401)
-      .expect({ message: 'Sorry, I don\'t recognize your invite code. Please double-check that it matches the code on your invite (case matters). If you\'re still having trouble, you can email your RSVP to rsvp@tylerandsarah.com' })
+      .expect({ message: 'Sorry, I don\'t recognize this code. Please double-check that it matches the one on your paper invitation (case matters).' })
     })
   })
 })
