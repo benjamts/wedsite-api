@@ -5,7 +5,7 @@
   "main": "index.js",
   "scripts": {
     "lint": "standard",
-    "migrate": "node-pg-migrate up",
+    "migrate": "source ./.env && node-pg-migrate up",
     "migrate:production": "heroku run PGSSLMODE=require node-pg-migrate up",
     "psql": "docker exec -it wedsite_db psql -U wedsiteapi -W -d wedsite",
     "start:api": "heroku local web",
