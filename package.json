@@ -8,6 +8,7 @@
     "migrate": "source ./.env && node-pg-migrate up",
     "migrate:production": "heroku run PGSSLMODE=require node-pg-migrate up",
     "psql": "docker exec -it wedsite_db psql -U wedsiteapi -W -d wedsite",
+    "psql:production": "heroku pg:psql",
     "start:api": "heroku local web",
     "start:db": "docker run -it -d --rm --name wedsite_db -p 5432:5432 -e POSTGRES_USER=wedsiteapi -e POSTGRES_PASSWORD=password -e POSTGRES_DB=wedsite postgres",
     "stop:db": "docker stop wedsite_db",
