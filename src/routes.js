@@ -51,7 +51,12 @@ router.get('/attendees', function (req, res, next) {
         if (
           attendee.rsvp_id !== (previousAttendee && previousAttendee.rsvp_id)
         ) {
-          text.push(`${i > 0 ? '\n' : ''}${attendee.additional_notes}`)
+          if (i > 0) {
+            text.push('')
+          }
+
+          const notes = attendee.additional_notes.replace(/\n+/g, ' ').trim()
+          text.push(`Note: ${notes || 'None'}`)
         }
         const isAttending = attendee.is_attending ? 'Yes' : 'No'
         text.push(`${attendee.full_name} - ${isAttending}`)

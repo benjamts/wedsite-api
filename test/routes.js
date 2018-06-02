@@ -58,6 +58,16 @@ describe('Route', function () {
           is_attending: false,
           rsvp_id: '2',
           additional_notes: `Sorry, we can't make it... :(`
+        }, {
+          full_name: 'Empty Notertonian',
+          is_attending: true,
+          rsvp_id: '3',
+          additional_notes: ''
+        }, {
+          full_name: 'Multi Lineari',
+          is_attending: true,
+          rsvp_id: '4',
+          additional_notes: 'Yay!\n\nCannot wait!!'
         }
       ]
       db.query.resolves({
@@ -74,12 +84,18 @@ describe('Route', function () {
 
     it('returns a text representation of the attendees', function () {
       const expectedResponse = [
-        `Super excited!`,
+        `Note: Super excited!`,
         `Foo McBarson - Yes`,
         ``,
-        `Sorry, we can't make it... :(`,
+        `Note: Sorry, we can't make it... :(`,
         `Baz Batter - No`,
-        `Blah Blahgerty - No`
+        `Blah Blahgerty - No`,
+        ``,
+        `Note: None`,
+        `Empty Notertonian - Yes`,
+        ``,
+        `Note: Yay! Cannot wait!!`,
+        `Multi Lineari - Yes`
       ].join('\n')
       return request(app).get('/attendees')
       .expect(200)
