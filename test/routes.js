@@ -39,6 +39,55 @@ describe('Route', function () {
     })
   })
 
+  describe('attendees', function () {
+    beforeEach(function () {
+      sinon.stub(db, 'query')
+      const dbResult = [
+        {
+          full_name: 'Foo McBarson',
+          is_attending: true,
+          rsvp_id: '1',
+          additional_notes: 'Super excited!'
+        }, {
+          full_name: 'Baz Batter',
+          is_attending: false,
+          rsvp_id: '2',
+          additional_notes: `Sorry, we can't make it... :(`
+        }, {
+          full_name: 'Blah Blahgerty',
+          is_attending: false,
+          rsvp_id: '2',
+          additional_notes: `Sorry, we can't make it... :(`
+        }
+      ]
+      db.query.resolves({
+        command: 'SELECT',
+        fields: Object.keys(dbResult),
+        rowCount: dbResult.length,
+        rows: dbResult
+      })
+    })
+
+    afterEach(function () {
+      db.query.restore()
+    })
+
+    it('returns a text representation of the attendees', function () {
+      const expectedResponse = [
+        `Super excited!`,
+        `Foo McBarson - Yes`,
+        ``,
+        `Sorry, we can't make it... :(`,
+        `Baz Batter - No`,
+        `Blah Blahgerty - No`
+      ].join('\n')
+      return request(app).get('/attendees')
+      .expect(200)
+      .expect('Content-Type', 'text/plain; charset=utf-8')
+      .expect(expectedResponse)
+    })
+  })
+
   describe('rsvp', function () {
     let rsvp
     let dbResult

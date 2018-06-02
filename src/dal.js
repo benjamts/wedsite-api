@@ -11,6 +11,30 @@ function _health () {
   return db.query(`SELECT 1;`)
 }
 
+function getAttendees () {
+  return Promise.resolve().then(function () {
+    const querystring = sql`
+      SELECT
+        a.full_name,
+        a.is_attending,
+        a.rsvp_id,
+        r.additional_notes
+      FROM attendee a
+      JOIN rsvp r
+      ON a.rsvp_id = r.id
+      ORDER BY
+        r.created_at,
+        r.id,
+        a.full_name;
+    `
+
+    return db.query(querystring)
+    .then(function (result) {
+      return result.rows
+    })
+  })
+}
+
 function insertRsvp (rsvp) {
   return Promise.resolve().then(function () {
     const { additionalNotes, attendees } = rsvp
@@ -53,5 +77,6 @@ function insertRsvp (rsvp) {
 
 module.exports = {
   _health,
+  getAttendees,
   insertRsvp
 }
