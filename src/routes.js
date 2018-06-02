@@ -41,6 +41,27 @@ router.post('/rsvp', function (req, res, next) {
   .catch(next)
 })
 
+router.get('/attendees', function (req, res, next) {
+  return dal.getAttendees()
+  .then(function (attendees) {
+    res.set('Content-Type', 'text/plain; charset=utf-8')
+    res.send(
+      attendees.reduce(function (text, attendee, i, attendees) {
+        const previousAttendee = attendees[i - 1]
+        if (
+          attendee.rsvp_id !== (previousAttendee && previousAttendee.rsvp_id)
+        ) {
+          text.push(`${i > 0 ? '\n' : ''}${attendee.additional_notes}`)
+        }
+        const isAttending = attendee.is_attending ? 'Yes' : 'No'
+        text.push(`${attendee.full_name} - ${isAttending}`)
+        return text
+      }, [])
+      .join('\n')
+    )
+  })
+})
+
 router.use(function (err, req, res, next) {
   if (res.headersSent) {
     next(err)
